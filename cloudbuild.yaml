@@ -1,0 +1,22 @@
+steps:
+# Build
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/assignment2-repo/flask-backend:$SHORT_SHA', '.']
+
+# Push
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/assignment2-repo/flask-backend:$SHORT_SHA']
+
+# Roll the VM container to the new image
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      gcloud compute instances update-container assignment2-vm \
+        --zone=us-central1-a \
+        --container-image=us-central1-docker.pkg.dev/$PROJECT_ID/assignment2-repo/flask-backend:$SHORT_SHA \
+        --container-restart-policy=always
+
+images:
+- 'us-central1-docker.pkg.dev/$PROJECT_ID/assignment2-repo/flask-backend:$SHORT_SHA'
